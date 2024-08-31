@@ -189,8 +189,8 @@ const logoutUser = asyncHandler(async function (req,res)  {
     await User.findByIdAndUpdate(
         req.user._id,  // middleware me jo add kiya tha waha se 
         {
-            $set: {
-                refreshToken: undefined   // refresh token empty kr diye
+            $unset: {
+                refreshToken: 1   //  this remove field form document  
             }
         },{
             new:true  // updated db
@@ -356,7 +356,7 @@ const updateUserAvatar = asyncHandler(async function (req,res) {
 
     // todo: delete prev avatar
 
-    return req
+    return res
     .status(200)
     .json(
         new ApiResponse(
@@ -370,7 +370,7 @@ const updateUserAvatar = asyncHandler(async function (req,res) {
 
 const updateUserCoverImage = asyncHandler(async function (req,res) {
     
-    const coverImageLocalPath= req.user?.path
+    const coverImageLocalPath= req.file?.path
 
     if(!coverImageLocalPath){
         throw new ApiError(400, "cover image is required")
@@ -413,7 +413,9 @@ const getUserChannelProfile = asyncHandler(async (req,res)=>{
     //agregation pipeline
     const channel = await User.aggregate([
         {
-            $match:username?.toLowerCase()
+            $match:{
+                username:username?.toLowerCase()
+            }
         },
         {
             $lookup:{
